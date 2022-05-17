@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Whisper</title>
+    <link rel="icon" type="image/x-icon" href="img\msg.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus+SC&family=Nanum+Myeongjo&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+    <link href="/styles.css" rel="stylesheet">
+  </head>
+  <body>
+    <ul class="pages">
+    <div id="vue-instance">
+      <li class="login page" v-show ="value1">
+        <div class="image_1">
+          <div class="bannertext"><span class="text1">Whisper<br></span>
+          <span class="text2">SECURE MESSAGING USING RSA & AES CRYPTOGRAPHIC ALGORITHMS<br>
+          Secure messaging is an open platform. Messages in this chat are protected by end-to-end encryption.<br>
+          This is the major project under IOE TU.<br></span>
+          <span class="container">
+              <form id="db" @submit.prevent class="login-email">
+                  <p class="login-text" style="font-size: 2rem; font-weight: 800;">Login</p>
+                  <div class="input-group">
+                      <input type="email" placeholder="Email" name="email" v-model="email" required>
+                  </div>
+                  <div class="input-group">
+                      <input type="password" placeholder="Password" name="password" v-model="pwd" required>
+                  </div>
+                  <div class="input-group">
+                    <button class="btn" type="submit" v-on:click="verifyLogin()" value="Login">Login</button>
+                  </div>
+                  <p class="login-register-text">Don't have an account? <a href="" @click.prevent="showMe()"> Register Here </a>.</p>
+              </form>
+          </span>
+          </div>
+      </div>
+    </li>
+    <li class="chat page" id ="inst" v-show ="value2">
+      <div class="chat-container full-width" ref="chatContainer">
+        <div class="title-header">
+          <h1>Whisper</h1>
+        </div>
+        <div class="message-list">
+          <div class="message full-width" v-for="message in messages">
+            <p font-size: x-small>
+              <span v-bind:class="(message.sender == originPublicKey) ? 'green' : 'red'">{{ message.send }}</span>
+              > {{ message.text }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="info-container full-width">
+      <h1>CHATROOM</h1>
+      <div class="room-select">
+        <input type="text" class="full-width" placeholder="Room Name" id="room-input" v-model="pendingRoom" @keyup.enter="joinRoom()">
+        <input class="yellow-button full-width" type="submit" v-on:click="joinRoom()" value="JOIN">
+      </div>
+      <div class="divider"></div>
+      <div class="notification-list" ref="notificationContainer">
+        <h1>NOTIFICATION LOG</h1>
+        <div class="notification full-width" v-for="notification in notifications">
+          <div class="notification-timestamp">{{ notification.timestamp }}</div>
+          <div class="notification-message">{{ notification.message }}</div>
+        </div>
+      </div>
+      <div class="flex-fill"></div>
+      <div class="divider"></div>
+      <div class="keys full-width">
+        <h1>KEYS</h1>
+        <h2>THEIR PUBLIC KEY</h2>
+        <div class="key red" v-if="destinationPublicKey">
+          <h3>TRUNCATED IDENTIFIER - {{ getKeySnippet(destinationPublicKey) }}</h3>
+          <p font-size: x-small>{{ destinationPublicKey }}</p>
+        </div>
+        <h2 v-else>Waiting for second user to join room...</h2>
+        <div class="divider"></div>
+        <h2>YOUR PUBLIC KEY</h2>
+        <div class="key green" v-if="originPublicKey">
+          <h3>TRUNCATED IDENTIFIER - {{ getKeySnippet(originPublicKey) }}</h3>
+          <p font-size: x-small>{{ originPublicKey }}</p>
+        </div>
+        <div class="keypair-loader full-width" v-else>
+          <div class="center-x loader"></div>
+          <h2 class="center-text">Generating Keypair...</h2>
+        </div>
+      </div>
+      </div>
+      <div class="bottom-bar full-width">
+        > <input class="message-input" type="text" placeholder="Message" v-model="draft" @keyup.enter="sendMessage()">
+      </div>
+    </li>
+    <li class="register page" v-show ="value3">
+      <div class="container_">
+        <form @submit.prevent  class="login-email_">
+                <p class="login-text_" style="font-size: 2rem; font-weight: 800;">Register</p>
+          <div class="input-group_">
+            <input type="text" placeholder="Username" v-model="rname" required>
+          </div>
+          <div class="input-group_">
+            <input type="email" placeholder="Email" v-model="remail" required>
+          </div>
+          <div class="input-group_">
+            <input type="password" placeholder="Password" v-model="rpassword" required>
+                </div>
+                <div class="input-group_">
+            <input type="password" placeholder="Confirm Password" v-model="cpassword"  required>
+          </div>
+          <div class="input-group_">
+            <button type="submit" class="btn" v-on:click="register()">Register</button>
+          </div>
+          <p class="login-register-text_">Have an account? <a href="" @click.prevent="showMe()">Login Here</a>.</p>
+        </form>
+      </div>
+    </li>
+    </div>
+  </ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.1/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.slim.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/immutable/3.8.1/immutable.min.js"></script>
+    <script src="/page.js"></script>
+  </body>
+</html>
